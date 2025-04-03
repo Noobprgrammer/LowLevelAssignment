@@ -3,23 +3,23 @@
 .data
     ;debug
     correct DB "Wroks$"
+    continueMessage DB "Press a Key to Continue: $"
     ; Main menu String
     mainMenu1 DB "1) Restock an Item$"
     mainMenu2 DB "2) Add Item to Cart$"
     mainMenu3 DB "3) Change details of Item$"
     mainMenu4 DB "4) Check Item price and quantity$"
     mainMenu5 DB "5) Daily Sales report$"
-    
-    spaceComma DB ", "
+    mainMenu6 DB "6) Exit Program$"
     
     wrongInputMessage DB "This is a Wrong Input$"
     
     menuMessage DB "Enter a number (1-5): $"
     
     ;Array of main menu string
-    mainMenu DW offset mainMenu1, offset mainMenu2, offset mainMenu3, offset mainMenu4, offset mainMenu5
+    mainMenu DW offset mainMenu1, offset mainMenu2, offset mainMenu3, offset mainMenu4, offset mainMenu5, offset mainMenu6
     
-    mainMenuSize DW 5
+    mainMenuSize DW 6
     
     ; Assigning Milk Data
     itemMilk DB "Milk$"
@@ -60,7 +60,13 @@ loopArrayVer:
     loop loopArrayVer
     StringHoriDis CRLF
 EndM
-    
+
+PressKeyToContinue Macro
+    StringHoriDis continueMessage
+    mov ah,01h
+    int 21h
+ENDM
+ 
 DisplayArrayHori Macro array, arraySize
     LOCAL loopArrayHori
     mov cx, arraySize
@@ -101,11 +107,6 @@ MAIN PROC
     
     call GetUserInput
     
-    DisplayArrayVer milkArray, itemStrCount
-    
-    mov ah, 4ch
-    int 21h
-    
 MAIN ENDP
     
 
@@ -120,11 +121,20 @@ GetUserInput PROC
     
     cmp al, 1
     jl wrongInput
-    cmp al, 5
+    cmp al, 6
     jg wrongInput
+    cmp al, 4
+    je DisplayItem
+    cmp al, 6
+    je exitProgram
     
     StringHoriDis correct
     StringHoriDis CRLF
+    ret
+    
+exitProgram:
+    mov ah, 4ch
+    int 21h
     ret
 
 wrongInput:
@@ -136,6 +146,21 @@ wrongInput:
     ret
     
 GetUserInput ENDP
+
+DisplayItem:
+    StringHoriDis CRLF
+    DisplayArrayVer milkArray, itemStrCount
+    DisplayArrayVer potatoArray, itemStrCount
+    StringHoriDis CRLF
+    PressKeyToContinue
+    StringHoriDis CRLF
+    StringHoriDis CRLF
+    call MAIN
+    ret
+
+
+
+    
 
 
 END MAIN  
