@@ -1,6 +1,7 @@
 .MODEL SMALL
 .STACK 100H
 .data
+    ;debug
     correct DB "Wroks$"
     ; Main menu String
     mainMenu1 DB "1) Restock an Item$"
@@ -55,7 +56,7 @@ loopArray:
     StringHori
     StringHoriDis CRLF
     add si, 1
-    loop loppArray
+    loop loopArray
 EndM
     
 CharHoriDis Macro char
@@ -79,7 +80,7 @@ MAIN PROC
     mov ax, @data
     mov ds, ax
     
-    call MainMenuDisplay
+    DisplayArrayHori mainMenu, mainMenuSize
     
     call GetUserInput
     
@@ -88,23 +89,6 @@ MAIN PROC
     
 MAIN ENDP
     
-MainMenuDisplay PROC
-    
-    mov cx, 5
-    mov si, 0
-    
-    
-loopMenu:
-    mov bx, si
-    shl bx, 1
-    mov dx, mainMenu[bx]
-    StringHori
-    StringHoriDis CRLF
-    add si, 1
-    loop loopMenu
-    
-    ret
-MainMenuDisplay ENDP
 
 GetUserInput PROC
     
@@ -119,8 +103,6 @@ GetUserInput PROC
     jl wrongInput
     cmp al, 5
     jg wrongInput
-    cmp al, 4
-    DisplayArrayHori
     
     StringHoriDis correct
     StringHoriDis CRLF
@@ -136,9 +118,6 @@ wrongInput:
     
 GetUserInput ENDP
 
-MenuInputProcess PROC
-    
-    
 
 END MAIN  
    
