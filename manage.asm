@@ -10,7 +10,9 @@
     mainMenu4 DB "4) Check Item price and quantity$"
     mainMenu5 DB "5) Daily Sales report$"
     
-    wrongInputMessage DB "This is a Wrong Input"
+    spaceComma DB ", "
+    
+    wrongInputMessage DB "This is a Wrong Input$"
     
     menuMessage DB "Enter a number (1-5): $"
     
@@ -24,6 +26,8 @@
     milkQuantity DB "10$"
     milkPrice DB "2.00$"
     
+    milkArray DW offset itemMilk, offset milkQuantity, offset milkPrice
+    
     ; Assigning Potato Data
     itemPotato DB "Potato$"
     potatoQuantity DB "20$"
@@ -33,30 +37,43 @@
     CRLF DB 13,10,'$'         
 
     ; Arrays storing addresses of Milk and Potato data
-    milkArray dw offset itemMilk, offset milkQuantity, offset milkPrice
-    potatoArray dw offset itemPotato, offset potatoQuantity, offset potatoPrice
     
-    ; Array of pointers to the item arrays
-    itemArray dw offset milkArray, offset potatoArray
+    potatoArray dw offset itemPotato, offset potatoQuantity, offset potatoPrice
     
     ; Storing the size of the array
     itemStrCount Dw 3  ; Number of strings per item
-    itemNumber  DW 2   ; Number of items (milk and potato)
 
 .CODE
 
+DisplayArrayVer Macro array, arraySize
+    Local loopArrayVer
+    mov cx, arraySize
+    mov si, 0
+loopArrayVer:
+    mov bx, si
+    shl bx, 1
+    mov dx, [array + bx]
+    StringHori
+    CharHoriDis ','
+    CharHoriDis ' '
+    add si, 1
+    loop loopArrayVer
+    StringHoriDis CRLF
+EndM
+    
 DisplayArrayHori Macro array, arraySize
+    LOCAL loopArrayHori
     mov cx, arraySize
     mov si, 0
     
-loopArray:
+loopArrayHori:
     mov bx, si
     shl bx, 1
     mov dx, [array + bx]
     StringHori
     StringHoriDis CRLF
     add si, 1
-    loop loopArray
+    loop loopArrayHori
 EndM
     
 CharHoriDis Macro char
@@ -83,6 +100,8 @@ MAIN PROC
     DisplayArrayHori mainMenu, mainMenuSize
     
     call GetUserInput
+    
+    DisplayArrayVer milkArray, itemStrCount
     
     mov ah, 4ch
     int 21h
