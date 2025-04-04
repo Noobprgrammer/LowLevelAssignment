@@ -14,38 +14,51 @@
     
     wrongInputMessage DB "This is a Wrong Input$"
     
-    menuMessage DB "Enter a number (1-5): $"
+    menuMessage DB "Enter a number (1-6): $"
     
     ;Array of main menu string
     mainMenu DW offset mainMenu1, offset mainMenu2, offset mainMenu3, offset mainMenu4, offset mainMenu5, offset mainMenu6
     
     mainMenuSize DW 6
     
+    tableHeader1 DB "Iteam$"
+    tableHeader2 DB "Quan$"
+    tableHeader3 DB "Price$"
+    
+    tableArray DW offset tableHeader1, offset tableHeader2, offset tableHeader3
+    
+    tableArraySize DW 3
+    
+    
     ; Assigning Milk Data
     itemMilk DB "Milk$"
     milkQuantity DB "10$"
-    milkPrice DB "2.00$"
+    milkPrice DB "2.00$$"
     
     milkArray DW offset itemMilk, offset milkQuantity, offset milkPrice
     
     ; Assigning Potato Data
     itemPotato DB "Potato$"
     potatoQuantity DB "20$"
-    potatoPrice DB "5.00$"
-    
-    ; Carriage Return + Line Feed (New Line)
-    CRLF DB 13,10,'$'         
+    potatoPrice DB "5.00$"        
 
     ; Arrays storing addresses of Milk and Potato data
     
     potatoArray dw offset itemPotato, offset potatoQuantity, offset potatoPrice
+    
+    itemArray Dw offset itemMilk, offset itemPotato
+    
+    itemArraySize DW 2
+    
+    ; Carriage Return + Line Feed (New Line)
+    CRLF DB 13,10,'$' 
     
     ; Storing the size of the array
     itemStrCount Dw 3  ; Number of strings per item
 
 .CODE
 
-DisplayArrayVer Macro array, arraySize
+DisplayArrayHori Macro array, arraySize
     Local loopArrayVer
     mov cx, arraySize
     mov si, 0
@@ -54,20 +67,21 @@ loopArrayVer:
     shl bx, 1
     mov dx, [array + bx]
     StringHori
-    CharHoriDis ','
-    CharHoriDis ' '
+    CharHoriDis 09h
     add si, 1
     loop loopArrayVer
     StringHoriDis CRLF
 EndM
+
 
 PressKeyToContinue Macro
     StringHoriDis continueMessage
     mov ah,01h
     int 21h
 ENDM
+
  
-DisplayArrayHori Macro array, arraySize
+DisplayArrayVer Macro array, arraySize
     LOCAL loopArrayHori
     mov cx, arraySize
     mov si, 0
@@ -95,73 +109,94 @@ EndM
 
 StringHoriDis Macro mess
     lea dx, mess
-    mov ah, 09h       ; DOS function to display a string
-    int 21h           ; Call DOS interrupt
-EndM                 ; End of macro
+    mov ah, 09h       
+    int 21h           
+EndM                 
 
 MAIN PROC
     mov ax, @data
     mov ds, ax
     
-    DisplayArrayHori mainMenu, mainMenuSize
+    mov ah, 0
+    mov al, 3
+    int 10h
+    
+    DisplayArrayVer mainMenu, mainMenuSize
     
     call GetUserInput
     
 MAIN ENDP
-    
+
+UserInput:
+    mov ah, 01h
+    int 21h
+    sub al,'0'
+    ret   
 
 GetUserInput PROC
     
     StringHoriDis menuMessage
     
-    mov ah, 01h
-    int 21h
-    sub al,'0'
+    call UserInput
+    
     StringHoriDis CRLF
     
     cmp al, 1
     jl wrongInput
     cmp al, 6
     jg wrongInput
+    cmp al, 1
+    je RestockSection
     cmp al, 4
     je DisplayItem
     cmp al, 6
     je exitProgram
     
+    
     StringHoriDis correct
     StringHoriDis CRLF
     ret
     
+GetUserInput ENDP
+ 
+    
+wrongInput:
+    StringHoriDis wrongInputMessage
+    StringHoriDis CRLF
+    StringHoriDis CRLF
+    PressKeyToContinue
+    jmp MAIN
+    
+    ret
+
 exitProgram:
     mov ah, 4ch
     int 21h
     ret
 
-wrongInput:
-    StringHoriDis wrongInputMessage
+RestockSection:
+    call UserInput
+    StringHoriDis correct
     StringHoriDis CRLF
-    StringHoriDis CRLF
-    call MAIN
+    PressKeyToContinue
     
+    jmp MAIN
     ret
-    
-GetUserInput ENDP
 
 DisplayItem:
     StringHoriDis CRLF
-    DisplayArrayVer milkArray, itemStrCount
-    DisplayArrayVer potatoArray, itemStrCount
+    DisplayArrayHori tableArray, tableArraySize
+    DisplayArrayHori milkArray, itemStrCount
+    DisplayArrayHori potatoArray, itemStrCount
     StringHoriDis CRLF
     PressKeyToContinue
     StringHoriDis CRLF
     StringHoriDis CRLF
-    call MAIN
+    jmp MAIN
     ret
 
 
 
     
-
-
 END MAIN  
    
